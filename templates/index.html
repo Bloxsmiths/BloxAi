@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>BloxAi - Chatbot Humanoid</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <a href="#" class="logout-btn" onclick="confirmLogout()" title="Logout">
+        <img src="{{ url_for('static', filename='images/logout.png') }}" alt="Logout" />
+      </a>
+      
+      <!-- Modal Konfirmasi Logout -->
+      <div id="logoutModal" class="modal">
+        <div class="modal-content">
+          <p>Apakah Anda yakin ingin logout?</p>
+          <div class="modal-buttons">
+            <button onclick="logout()">Ya</button>
+            <button onclick="closeModal()">Tidak</button>
+          </div>
+        </div>
+      </div>
+      
+      
+    <div class="container">
+        <!-- Branding BloxAi -->
+        <div class="header">
+            <img src="{{ url_for('static', filename='images/bloxsmiths-logo.png') }}" alt="Logo Bloxsmiths" class="logo">
+            <span>BloxAi</span>
+        </div>
+          
+
+        <!-- Kotak chat -->
+        <div class="chat-box">
+            {% if user_input %}
+                <div class="message user-message">
+                    <p><strong>Anda:</strong> {{ user_input }}</p>
+                </div>
+                <div class="message ai-message">
+                    <p><strong>AI:</strong> {{ ai_response }}</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Form -->
+        <form action="/chat" method="POST">
+            <input type="text" name="user_input" class="input-box" placeholder="Ketik pesan..." required>
+            <button type="submit">Kirim</button>
+        </form>
+
+        {% if ai_status %}
+        <div class="status">
+            <p><strong>Status AI:</strong></p>
+            <ul>
+                {% for key, value in ai_status.items() %}
+                    <li>{{ key }}: {{ value }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Aktivitas otonom -->
+        <div class="autonomous" id="ai-autonomous">
+            <h3>🧠 Aktivitas Otonom AI</h3>
+            <p><strong>Input:</strong> <span id="auto-input">{{ ai_auto.input }}</span></p>
+            <p><strong>Respons:</strong> <span id="auto-response">{{ ai_auto.response }}</span></p>
+        </div>
+    </div>
+
+    <!-- Script polling aktivitas otonom -->
+
+    <script>
+        function confirmLogout() {
+          document.getElementById('logoutModal').style.display = 'block';
+        }
+      
+        function closeModal() {
+          document.getElementById('logoutModal').style.display = 'none';
+        }
+      
+        function logout() {
+          window.location.href = "{{ url_for('auth.logout') }}";
+        }
+    </script>
+      
+
+    <script>
+        setInterval(() => {
+            fetch("/ai-autonomous-status")
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById("auto-input").innerText = data.input || "(tidak ada)";
+                    document.getElementById("auto-response").innerText = data.response || "(tidak ada respons)";
+                });
+        }, 3000);
+    </script>
+</body>
+</html>
